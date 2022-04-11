@@ -3,7 +3,7 @@ const GET_PRIOR_VOTES = [
   "function getPriorVotes(address account, uint blockNumber) public view returns (uint96) ",
 ];
 const PROPOSAL_THRESHOLD = [
-  "function proposalThreshold() public view returns (uint)",
+  "function proposalThreshold() external returns (uint)",
 ];
 const PROPOSAL_CANCELED = `event ProposalCanceled(uint id)`;
 const PROPOSAL_QUEUED = `event ProposalQueued(uint id, uint eta)`;

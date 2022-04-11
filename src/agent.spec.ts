@@ -19,18 +19,22 @@ const testGovernanceBravo: string = createAddress("0xdef1");
 const iface: utils.Interface = new utils.Interface([util.PROPOSAL_CREATED]);
 
 describe("Uniswap agents", () => {
+  let handleTransaction: HandleTransaction;
   const mockProvider = new MockEthersProvider();
-
-  let handler: HandleTransaction = provideHandleTransaction(
-    testUni,
-    testGovernanceBravo,
-    mockProvider as any
-  );
+  beforeAll(() => {
+    handleTransaction = provideHandleTransaction(
+      testUni,
+      testGovernanceBravo,
+      mockProvider as any
+    );
+  });
+  beforeEach(() => mockProvider.clear());
 
   it("should ignore empty transactions", async () => {
     const tx: TransactionEvent = new TestTransactionEvent();
 
-    const findings: Finding[] = await handler(tx);
+    const findings: Finding[] = await handleTransaction(tx);
     expect(findings).toStrictEqual([]);
   });
+  it("should return a finding", async () => {});
 });
