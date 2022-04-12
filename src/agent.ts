@@ -7,10 +7,9 @@ import {
   ethers,
   HandleTransaction,
 } from "forta-agent";
-import { providers } from "ethers";
+import { providers, BigNumber } from "ethers";
 
 import util from "./utils";
-import bignumber from "bignumber.js";
 
 const UNIToken: string = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
 const GovernanceBravo: string = "0x408ED6354d4973f66138C91495F2f2FCbd8724C3";
@@ -20,9 +19,8 @@ const PROPSERS_MAP: Map<number, string> = new Map();
 export const createFinding = (
   id: number,
   proposer: string,
-  map: any,
-  proposalThresholdValue: bignumber,
-  getPriorVotes: bignumber
+  proposalThresholdValue: BigNumber,
+  getPriorVotes: BigNumber
 ): Finding => {
   return Finding.fromObject({
     name: "Low Proposer Balance",
@@ -34,7 +32,6 @@ export const createFinding = (
     metadata: {
       id: id.toString(),
       proposer: proposer.toString(),
-      map: map,
       proposalThresholdValue: proposalThresholdValue.toString(),
       getPriorVotes: getPriorVotes.toString(),
     },
@@ -68,14 +65,13 @@ export function provideHandleTransaction(
       util.PROPOSAL_CANCELED,
       governanceBravo
     );
-    await Promise.all(
-      proposalCanceledEvent.map(async (event) => {
-        const id: number = event.args.id;
-        if (PROPSERS_MAP.has(id)) {
-          PROPSERS_MAP.delete(id);
-        }
-      })
-    );
+
+    proposalCanceledEvent.forEach((event) => {
+      const id: number = event.args.id;
+      if (PROPSERS_MAP.has(id)) {
+        PROPSERS_MAP.delete(id);
+      }
+    });
     await Promise.all(
       proposalCreatedEvent.map(async (event) => {
         const id: number = event.args.id;
@@ -85,14 +81,14 @@ export function provideHandleTransaction(
         if (idPresent == false) {
           PROPSERS_MAP.set(id, proposer);
         }
-        const idPresents = PROPSERS_MAP.get(id);
+        // const idPresents = PROPSERS_MAP.get(id);
 
-        const getPriorVotes: bignumber = await uniContract.getPriorVotes(
+        const getPriorVotes: BigNumber = await uniContract.getPriorVotes(
           proposer,
           txEvent.blockNumber - 1,
           { blockTag: txEvent.blockNumber }
         );
-        const proposalThresholdValue: bignumber =
+        const proposalThresholdValue: BigNumber =
           await governanceBravoContract.proposalThreshold({
             blockTag: txEvent.blockNumber,
           });
@@ -100,7 +96,6 @@ export function provideHandleTransaction(
           const newFinding: Finding = createFinding(
             id,
             proposer,
-            idPresents,
             proposalThresholdValue,
             getPriorVotes
           );
