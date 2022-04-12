@@ -11,11 +11,6 @@ import {
   TestTransactionEvent,
   MockEthersProvider,
 } from "forta-agent-tools/lib/tests";
-import { providers } from "ethers";
-
-import { encodeParameters } from "forta-agent-tools";
-import { leftPad } from "web3-utils";
-const toBytes32 = (n: string) => leftPad(BigNumber.from(n).toHexString(), 64);
 
 import { provideHandleTransaction } from "./agent";
 import { utils, BigNumber } from "ethers";
@@ -47,6 +42,9 @@ const testUni: string = createAddress("0xdef1");
 const testGovernanceBravo: string = createAddress("0xdef1");
 const testProposalCreateInterface: Interface = new utils.Interface([
   util.PROPOSAL_CREATED,
+]);
+const testProposalCancelledInterface: Interface = new utils.Interface([
+  util.PROPOSAL_CANCELED,
 ]);
 const testProposalThresholdInterface: Interface = new utils.Interface(
   util.PROPOSAL_THRESHOLD
@@ -80,10 +78,7 @@ describe("Uniswap agents", () => {
     const signatures: string[] = [
       "transfer(address recipient, uint256 amount)",
     ];
-    // const testData: any = encodeParameters(
-    //   ["string", "bignumber"],
-    //   ["testFlag", 78997]
-    // );
+
     const calldatas: any[] = [
       "0xa9059cbb000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb2000000000000000000000000000000000000000000000000000000003b9aca00",
     ];
@@ -104,12 +99,14 @@ describe("Uniswap agents", () => {
         description,
       ]
     );
-
+    // const events2 = testProposalCancelledInterface.encodeEventLog(
+    //   testProposalCancelledInterface.getEvent("ProposalCanceled"),
+    //   [id]
+    // );
     mockProvider.addCallTo(testUni, 50, testGetPriorVotes, "getPriorVotes", {
       inputs: [proposer, 49],
       outputs: [10],
     });
-    // // console.log("findings1");
 
     mockProvider.addCallTo(
       testUni,
@@ -126,14 +123,18 @@ describe("Uniswap agents", () => {
     const txEvent: TransactionEvent = new TestTransactionEvent()
       .setBlock(50)
       .addAnonymousEventLog(testGovernanceBravo, data, ...topics);
-    console.log(txEvent);
-    console.log("finding3");
 
+    // const txEvent2: TransactionEvent = new TestTransactionEvent()
+    //   .setBlock(50)
+    //   .addAnonymousEventLog(
+    //     testGovernanceBravo,
+    //     events2.data,
+    //     ...events2.topics
+    //   );
     const findings = await handleTransaction(txEvent);
 
-    console.log("finding4");
-
     console.log(findings);
+
     // expect(findings).toStrictEqual([]);
   });
 });

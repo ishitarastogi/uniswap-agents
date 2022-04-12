@@ -16,6 +16,7 @@ const UNIToken: string = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
 const GovernanceBravo: string = "0x408ED6354d4973f66138C91495F2f2FCbd8724C3";
 
 const PROPSERS_MAP: Map<number, string> = new Map();
+
 export const createFinding = (
   id: number,
   proposer: string,
@@ -63,12 +64,12 @@ export function provideHandleTransaction(
       governanceBravo
     );
 
-    // const proposalQueuedEvent = txEvent.filterLog(
-    //   util.PROPOSAL_QUEUED,
-    //   governanceBravo
-    // );
+    const proposalCanceledEvent = txEvent.filterLog(
+      util.PROPOSAL_CANCELED,
+      governanceBravo
+    );
     // await Promise.all(
-    //   proposalQueuedEvent.map(async (event) => {
+    //   proposalCanceledEvent.map(async (event) => {
     //     const id: number = event.args.id;
     //     if (PROPSERS_MAP.has(id)) {
     //       PROPSERS_MAP.delete(id);
@@ -88,11 +89,8 @@ export function provideHandleTransaction(
 
         const getPriorVotes: bignumber = await uniContract.getPriorVotes(
           proposer,
-
           txEvent.blockNumber - 1,
-          {
-            blockTag: txEvent.blockNumber,
-          }
+          { blockTag: txEvent.blockNumber }
         );
         const proposalThresholdValue: bignumber =
           await governanceBravoContract.proposalThreshold({
@@ -106,9 +104,9 @@ export function provideHandleTransaction(
             proposalThresholdValue,
             getPriorVotes
           );
-          PROPSERS_MAP.delete(id);
 
           findings.push(newFinding);
+          PROPSERS_MAP.delete(id);
         }
       })
     );
