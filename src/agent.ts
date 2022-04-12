@@ -68,14 +68,14 @@ export function provideHandleTransaction(
       util.PROPOSAL_CANCELED,
       governanceBravo
     );
-    // await Promise.all(
-    //   proposalCanceledEvent.map(async (event) => {
-    //     const id: number = event.args.id;
-    //     if (PROPSERS_MAP.has(id)) {
-    //       PROPSERS_MAP.delete(id);
-    //     }
-    //   })
-    // );
+    await Promise.all(
+      proposalCanceledEvent.map(async (event) => {
+        const id: number = event.args.id;
+        if (PROPSERS_MAP.has(id)) {
+          PROPSERS_MAP.delete(id);
+        }
+      })
+    );
     await Promise.all(
       proposalCreatedEvent.map(async (event) => {
         const id: number = event.args.id;
