@@ -16,12 +16,7 @@ import { provideHandleTransaction } from "./agent";
 import { utils, BigNumber } from "ethers";
 import util from "./utils";
 import { Interface } from "@ethersproject/abi";
-const createFinding = (
-  id: any,
-  proposer: string,
-  proposalThresholdValue: number,
-  getPriorVotes: number
-): Finding => {
+const createFinding = (id: any, proposer: string): Finding => {
   return Finding.fromObject({
     name: "Low Proposer Balance",
     description: "Low Proposer’s Uni Balance During Voting Period",
@@ -30,10 +25,8 @@ const createFinding = (
     type: FindingType.Info,
     protocol: "UNISWAP",
     metadata: {
-      id: id,
+      id: id.toString(),
       proposer: proposer,
-      proposalThresholdValue: proposalThresholdValue.toString(),
-      getPriorVotes: getPriorVotes.toString(),
     },
   });
 };
@@ -99,10 +92,7 @@ describe("Uniswap agents", () => {
         description,
       ]
     );
-    // const events2 = testProposalCancelledInterface.encodeEventLog(
-    //   testProposalCancelledInterface.getEvent("ProposalCanceled"),
-    //   [id]
-    // );
+
     mockProvider.addCallTo(testUni, 50, testGetPriorVotes, "getPriorVotes", {
       inputs: [proposer, 49],
       outputs: [10],
@@ -118,23 +108,15 @@ describe("Uniswap agents", () => {
         outputs: [100],
       }
     );
-    // console.log("findings2");
 
     const txEvent: TransactionEvent = new TestTransactionEvent()
       .setBlock(50)
       .addAnonymousEventLog(testGovernanceBravo, data, ...topics);
 
-    // const txEvent2: TransactionEvent = new TestTransactionEvent()
-    //   .setBlock(50)
-    //   .addAnonymousEventLog(
-    //     testGovernanceBravo,
-    //     events2.data,
-    //     ...events2.topics
-    //   );
     const findings = await handleTransaction(txEvent);
 
     console.log(findings);
 
-    // expect(findings).toStrictEqual([]);
+    expect(findings).toStrictEqual([createFinding(id, proposer)]);
   });
 });

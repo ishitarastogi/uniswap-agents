@@ -16,12 +16,7 @@ const GovernanceBravo: string = "0x408ED6354d4973f66138C91495F2f2FCbd8724C3";
 
 const PROPSERS_MAP: Map<number, string> = new Map();
 
-export const createFinding = (
-  id: number,
-  proposer: string,
-  proposalThresholdValue: BigNumber,
-  getPriorVotes: BigNumber
-): Finding => {
+export const createFinding = (id: number, proposer: string): Finding => {
   return Finding.fromObject({
     name: "Low Proposer Balance",
     description: "Low Proposer’s Uni Balance During Voting Period",
@@ -31,9 +26,7 @@ export const createFinding = (
     protocol: "UNISWAP",
     metadata: {
       id: id.toString(),
-      proposer: proposer.toString(),
-      proposalThresholdValue: proposalThresholdValue.toString(),
-      getPriorVotes: getPriorVotes.toString(),
+      proposer: proposer.toString().toLowerCase(),
     },
   });
 };
@@ -93,12 +86,7 @@ export function provideHandleTransaction(
             blockTag: txEvent.blockNumber,
           });
         if (getPriorVotes.lt(proposalThresholdValue)) {
-          const newFinding: Finding = createFinding(
-            id,
-            proposer,
-            proposalThresholdValue,
-            getPriorVotes
-          );
+          const newFinding: Finding = createFinding(id, proposer);
 
           findings.push(newFinding);
           PROPSERS_MAP.delete(id);
