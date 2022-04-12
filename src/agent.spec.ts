@@ -4,18 +4,20 @@ import {
   FindingType,
   HandleTransaction,
   TransactionEvent,
-  getEthersProvider,
 } from "forta-agent";
 import {
   createAddress,
   TestTransactionEvent,
   MockEthersProvider,
 } from "forta-agent-tools/lib/tests";
+import { leftPad } from "web3-utils";
 
+const toBytes32 = (n: string) => leftPad(BigNumber.from(n).toHexString(), 64);
 import { provideHandleTransaction } from "./agent";
 import { utils, BigNumber } from "ethers";
 import util from "./utils";
 import { Interface } from "@ethersproject/abi";
+
 const createFinding = ([id, proposer]: string[]): Finding =>
   Finding.fromObject({
     name: "Low Proposer Balance",
@@ -35,14 +37,12 @@ const testGovernanceBravo: string = createAddress("0xdef1");
 const testProposalCreateInterface: Interface = new utils.Interface([
   util.PROPOSAL_CREATED,
 ]);
-
 const testProposalThresholdInterface: Interface = new utils.Interface(
   util.PROPOSAL_THRESHOLD
 );
 const testGetPriorVotes: Interface = new utils.Interface(util.GET_PRIOR_VOTES);
 
 describe("Uniswap agents", () => {
-  let tx: TransactionEvent;
   let handleTransaction: HandleTransaction;
   const mockProvider = new MockEthersProvider();
   beforeAll(() => {
@@ -70,9 +70,7 @@ describe("Uniswap agents", () => {
       "transfer(address recipient, uint256 amount)",
     ];
 
-    const calldatas: any[] = [
-      "0xa9059cbb000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb2000000000000000000000000000000000000000000000000000000003b9aca00",
-    ];
+    const calldatas: string[] = [toBytes32("0x0523")];
     const startBlock: number = 14;
     const endBlock: number = 14549129;
     const description: string = "Proposal #1: Give grant to team";
@@ -126,9 +124,7 @@ describe("Uniswap agents", () => {
       "transfer(address recipient, uint256 amount)",
     ];
 
-    const calldatas: any[] = [
-      "0xa9059cbb000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb2000000000000000000000000000000000000000000000000000000003b9aca00",
-    ];
+    const calldatas: string[] = [toBytes32("0x0123")];
     const startBlock: number = 14;
     const endBlock: number = 14549129;
     const description: string = "Proposal #1: Give grant to team";
@@ -179,9 +175,7 @@ describe("Uniswap agents", () => {
       "transfer(address recipient, uint256 amount)",
     ];
 
-    const calldatas: any[] = [
-      "0xa9059cbb000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb2000000000000000000000000000000000000000000000000000000003b9aca00",
-    ];
+    const calldatas: string[] = [toBytes32("0xc578")];
     const startBlock: number = 14;
     const endBlock: number = 14549129;
     const description: string = "Proposal #1: Give grant to team";
@@ -237,16 +231,14 @@ describe("Uniswap agents", () => {
       createFinding(TEST_DATA[2]),
     ]);
   });
-  it("should return no findings when getPriorVotes is greater than proposalThreshold", async () => {
+  it("should return findings only when getPriorVotes is less than proposalThreshold", async () => {
     const targets: string[] = ["0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"];
     const values: number[] = [0, 0];
     const signatures: string[] = [
       "transfer(address recipient, uint256 amount)",
     ];
 
-    const calldatas: any[] = [
-      "0xa9059cbb000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb2000000000000000000000000000000000000000000000000000000003b9aca00",
-    ];
+    const calldatas: string[] = [toBytes32("0xc578")];
     const startBlock: number = 14;
     const endBlock: number = 14549129;
     const description: string = "Proposal #1: Give grant to team";
